@@ -1,6 +1,7 @@
 ﻿using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
 using Assets._Project.Develop.Runtime.Infrastructure;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
+using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
 using System.Collections;
@@ -11,6 +12,8 @@ namespace Assets._Project.Develop.Runtime.Meta.Infrastructure
     public class MainMenuBootstrap : SceneBootstrap
     {
         private DIContainer _container;
+        
+        private WalletService _walletService;
 
         public override void ProcessRegistrations(DIContainer container, IInputSceneArgs sceneArgs = null)
         {
@@ -30,6 +33,8 @@ namespace Assets._Project.Develop.Runtime.Meta.Infrastructure
         public override void Run()
         {
             Debug.Log("Start - MainMenu scene");
+
+            _walletService = _container.Resolve<WalletService>();
         }
 
         private void Update()
@@ -40,6 +45,23 @@ namespace Assets._Project.Develop.Runtime.Meta.Infrastructure
                 ICoroutinesPerformer coroutinesPerformer = _container.Resolve<ICoroutinesPerformer>();
 
                 coroutinesPerformer.StartPerform(sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, new GameplayInputArgs(3)));
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                _walletService.Add(CurrencyTypes.Gold, 10);
+
+                Debug.Log("Золота в кошельке: " + _walletService.GetCurrency(CurrencyTypes.Gold).Value);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                if(_walletService.Enought(CurrencyTypes.Gold, 10))
+                {
+                    _walletService.Spend(CurrencyTypes.Gold, 10);
+
+                    Debug.Log("Золота в кошельке: " + _walletService.GetCurrency(CurrencyTypes.Gold).Value);
+                }
             }
         }
     }
