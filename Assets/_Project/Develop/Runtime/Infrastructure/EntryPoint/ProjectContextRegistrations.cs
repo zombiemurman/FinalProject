@@ -3,11 +3,17 @@ using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
 using Assets._Project.Develop.Runtime.Utilities.AssetsManagment;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
+using Assets._Project.Develop.Runtime.Utilities.DataManagment;
+using Assets._Project.Develop.Runtime.Utilities.DataManagment.DataProviders;
+using Assets._Project.Develop.Runtime.Utilities.DataManagment.DataRepository;
+using Assets._Project.Develop.Runtime.Utilities.DataManagment.KeyStorage;
+using Assets._Project.Develop.Runtime.Utilities.DataManagment.Serializers;
 using Assets._Project.Develop.Runtime.Utilities.LoadingScreen;
 using Assets._Project.Develop.Runtime.Utilities.Reactive;
 using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
@@ -28,7 +34,27 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
 
             container.RegisterAsSingle(CreateSceneSwitcherService);
 
-            container.RegisterAsSingle(CreateWalletService);
+            container.RegisterAsSingle(CreateWalletService).NonLazy();
+
+            container.RegisterAsSingle<ISaveLoadService>(CreateSaveLoadService);
+
+            container.RegisterAsSingle(CreatePlayerDataProvider);
+        }
+
+        private static PlayerDataProvider CreatePlayerDataProvider(DIContainer container)
+            => new PlayerDataProvider(container.Resolve<ISaveLoadService>(), container.Resolve<ConfigsProviderService>());
+
+        private static SaveLoadService CreateSaveLoadService(DIContainer container)
+        {
+            IDataSerializer dataSerializer = new JsonSerializer();
+
+            IDataKeysStorage dataKeysStorage = new MapDataKeysStorage();
+
+            string saveFolderPath = Application.isEditor ? Application.dataPath : Application.persistentDataPath;
+
+            IDataRepository dataRepository = new LoacalFileDataRepository(saveFolderPath, "json");
+
+            return new SaveLoadService(dataSerializer, dataKeysStorage, dataRepository);
         }
 
         private static WalletService CreateWalletService(DIContainer container)
@@ -38,7 +64,7 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
             foreach (CurrencyTypes currencyTypes in Enum.GetValues(typeof(CurrencyTypes)))
                 currencies[currencyTypes] = new ReactiveVariable<int>();
 
-            return new WalletService(currencies);
+            return new WalletService(currencies, container.Resolve<PlayerDataProvider>());
         }
 
         private static SceneSwitcherService CreateSceneSwitcherService(DIContainer container)
