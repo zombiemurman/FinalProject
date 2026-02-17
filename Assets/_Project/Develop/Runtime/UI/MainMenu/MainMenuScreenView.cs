@@ -8,25 +8,25 @@ namespace Assets._Project.Develop.Runtime.UI.MainMenu
 {
     public class MainMenuScreenView : MonoBehaviour, IView
     {
-        public event Action OpenTestPopupButtonClicked;
+        public event Action OpenLevelsMenuButtonClicked;
 
         [field: SerializeField] public IconTextListView WalletView {  get; private set; }
 
-        [SerializeField] private Button _openTestPopupButton;
+        [SerializeField] private Button _openLevelsMenuButton;
 
         private void OnEnable()
         {
-            _openTestPopupButton.onClick.AddListener(OnOpenTestPopupButtonClicked);
+            _openLevelsMenuButton.onClick.AddListener(OnOpenLevelsMenuButtonClicked);
         }
 
         private void OnDisable() 
         {
-            _openTestPopupButton.onClick.RemoveListener(OnOpenTestPopupButtonClicked);
+            _openLevelsMenuButton.onClick.RemoveListener(OnOpenLevelsMenuButtonClicked);
         }
 
-        private void OnOpenTestPopupButtonClicked()
+        private void OnOpenLevelsMenuButtonClicked()
         {
-            OpenTestPopupButtonClicked?.Invoke();
+            OpenLevelsMenuButtonClicked?.Invoke();
         }
     }
 }
