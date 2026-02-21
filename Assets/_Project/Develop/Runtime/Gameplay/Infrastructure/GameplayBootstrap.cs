@@ -1,4 +1,5 @@
-﻿using Assets._Project.Develop.Runtime.Infrastructure;
+﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Systems;
+using Assets._Project.Develop.Runtime.Infrastructure;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
@@ -12,6 +13,10 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
     {
         private DIContainer _container;
         private GameplayInputArgs _inputArgs;
+
+        [SerializeField] private TestGameplay _testGameplay;
+
+        private EntitiesLifeContext _entitiesLifeContext;
 
         public override void ProcessRegistrations(DIContainer container, IInputSceneArgs sceneArgs = null)
         {
@@ -27,11 +32,13 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
 
         public override IEnumerator Initialize()
         {
-            
-
             Debug.Log($"Level - {_inputArgs.LevelNumber}");
 
             Debug.Log("Initialize Gameplay scene");
+
+            _testGameplay.Initialize(_container);
+
+            _entitiesLifeContext = _container.Resolve<EntitiesLifeContext>();
 
             yield break;
         }
@@ -39,10 +46,14 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
         public override void Run()
         {
             Debug.Log("Start - Gameplay scene");
+
+            _testGameplay.Run();
         }
 
         private void Update()
         {
+            _entitiesLifeContext?.Update(Time.deltaTime);
+
             if (Input.GetKeyDown(KeyCode.F))
             {
                 SceneSwitcherService sceneSwitcherService = _container.Resolve<SceneSwitcherService>();

@@ -1,4 +1,5 @@
-﻿using Assets._Project.Develop.Runtime.Infrastructure.DI;
+﻿using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
+using Assets._Project.Develop.Runtime.Infrastructure.DI;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.DataManagment.DataProviders;
@@ -64,7 +65,8 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
 
             SceneSwitcherService sceneSwitcherService = container.Resolve<SceneSwitcherService>();
 
-            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu);
+            //yield return sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu);
+            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, new GameplayInputArgs(1));
         }
     }
 }
