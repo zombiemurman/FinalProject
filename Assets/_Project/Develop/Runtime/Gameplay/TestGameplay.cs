@@ -24,7 +24,9 @@ namespace Assets._Project.Develop.Runtime.Gameplay
 
         public void Run()
         {
-            _entity = _entitiesFactory.CreateTestEntity(Vector3.zero);
+            _entity = _entitiesFactory.CreateHeroEntity(Vector3.zero);
+            
+            _entitiesFactory.CreateGhostEntity(Vector3.zero + Vector3.forward * 5);
 
             _isRunning = true;
         }
@@ -34,12 +36,23 @@ namespace Assets._Project.Develop.Runtime.Gameplay
             if (_isRunning == false) 
                 return;
 
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                _entity.TakeDamageRequest.Invoke(50);
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                _entity.StartAttackRequest.Invoke();
+            }
+
             Vector3 input = new Vector3(
                 Input.GetAxisRaw("Horizontal"),
                 0,
                 Input.GetAxisRaw("Vertical"));
 
             _entity.MoveDirection.Value = input;
+            _entity.RotationDirection.Value = input;
         }
 
     }

@@ -13,15 +13,22 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
         {
             container.RegisterAsSingle(CreateEntitiesFactory);
             container.RegisterAsSingle(CreateEntitiesLifeContext);
+            container.RegisterAsSingle(CreateCollidersRegistryService);
             
             container.RegisterAsSingle(CreateMomoEntitiesFactory).NonLazy();
+        }
+
+        private static CollidersRegistryService CreateCollidersRegistryService(DIContainer container)
+        {
+            return new CollidersRegistryService();
         }
 
         private static MonoEntitiesFactory CreateMomoEntitiesFactory(DIContainer container)
         {
             return new MonoEntitiesFactory(
                 container.Resolve<ResourcesAssetsLoader>(),
-                container.Resolve<EntitiesLifeContext>());
+                container.Resolve<EntitiesLifeContext>(),
+                container.Resolve<CollidersRegistryService>());
         }
 
         private static EntitiesLifeContext CreateEntitiesLifeContext(DIContainer container)
