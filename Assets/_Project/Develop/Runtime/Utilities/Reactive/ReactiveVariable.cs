@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Assets._Project.Develop.Runtime.Utilities.Reactive
 {
-    public class ReactiveVariable<T> : IReadOnlyVariable<T> where T : IEquatable<T>
+    public class ReactiveVariable<T> : IReadOnlyVariable<T> 
     {
         private readonly List<Subscriber<T, T>> _subscribers = new();
 
@@ -13,9 +13,21 @@ namespace Assets._Project.Develop.Runtime.Utilities.Reactive
 
         private T _value;
 
-        public ReactiveVariable() => _value = default;
+        private IEqualityComparer<T> _comparer;
 
-        public ReactiveVariable(T value) => _value = value;
+        public ReactiveVariable() : this(default)
+        {
+        }
+
+        public ReactiveVariable(T value) : this(value, EqualityComparer<T>.Default)
+        {
+        }
+
+        public ReactiveVariable(T value, IEqualityComparer<T> comparer)
+        {
+            _value = value;
+            _comparer = comparer;
+        }
 
         public T Value
         {
@@ -27,7 +39,7 @@ namespace Assets._Project.Develop.Runtime.Utilities.Reactive
 
                 _value = value;
 
-                if (_value.Equals(oldValue) == false)
+                if (_comparer.Equals(oldValue, value) == false)
                     Invoke(oldValue, value);
             }
         }
