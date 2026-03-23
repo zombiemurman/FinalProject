@@ -50,10 +50,10 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
 
             bool isPlayerDataSaveExists = false;
 
-            yield return playerDataProvider.Exists(result => isPlayerDataSaveExists = result);
+            yield return playerDataProvider.ExistsAsync(result => isPlayerDataSaveExists = result);
 
             if (isPlayerDataSaveExists)
-                yield return playerDataProvider.Load();
+                yield return playerDataProvider.LoadAsync();
             else
                 playerDataProvider.Reset();
 
@@ -65,8 +65,7 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
 
             SceneSwitcherService sceneSwitcherService = container.Resolve<SceneSwitcherService>();
 
-            //yield return sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu);
-            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, new GameplayInputArgs(1));
+            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu);
         }
     }
 }

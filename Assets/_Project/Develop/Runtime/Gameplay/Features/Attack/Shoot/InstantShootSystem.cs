@@ -8,6 +8,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack.Shoot
 {
     public class InstantShootSystem : IInitializableSystem, IDisposableSystem
     {
+        private Entity _entity;
+        
         private readonly EntitiesFactory _entitiesFactory;
 
         private ReactiveEvent _attackDelayEndEvent;
@@ -25,6 +27,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack.Shoot
 
         public void OnInit(Entity entity)
         {
+            _entity = entity;
+
             _attackDelayEndEvent = entity.AttackDelayEndEvent;
             _damage = entity.InstantAttackDamage;
             _shootPoint = entity.ShootPoint;
@@ -39,7 +43,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack.Shoot
 
         private void OnAttackDelayEnd()
         {
-            _entitiesFactory.CreateProjectile(_shootPoint.position, _shootPoint.forward, _damage.Value);
+            _entitiesFactory.CreateProjectile(_shootPoint.position, _shootPoint.forward, _damage.Value, _entity);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Systems;
 using Assets._Project.Develop.Runtime.Gameplay.Features.AI;
+using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
+using Assets._Project.Develop.Runtime.Gameplay.States;
 using Assets._Project.Develop.Runtime.Infrastructure;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
@@ -15,10 +17,9 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
         private DIContainer _container;
         private GameplayInputArgs _inputArgs;
 
-        [SerializeField] private TestGameplay _testGameplay;
-
         private EntitiesLifeContext _entitiesLifeContext;
         private AIBrainsContext _brainsContext;
+        private GameplayStatesContext _gameplayStatesContext;
 
         public override void ProcessRegistrations(DIContainer container, IInputSceneArgs sceneArgs = null)
         {
@@ -38,11 +39,13 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
 
             Debug.Log("Initialize Gameplay scene");
 
-            _testGameplay.Initialize(_container);
-
             _entitiesLifeContext = _container.Resolve<EntitiesLifeContext>();
 
             _brainsContext = _container.Resolve<AIBrainsContext>();
+
+            _gameplayStatesContext = _container.Resolve<GameplayStatesContext>();
+
+            _container.Resolve<MainHeroFactory>().Create(Vector3.zero);
 
             yield break;
         }
@@ -51,7 +54,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
         {
             Debug.Log("Start - Gameplay scene");
 
-            _testGameplay.Run();
+            _gameplayStatesContext.Run();
         }
 
         private void Update()
@@ -59,6 +62,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             _brainsContext?.Update(Time.deltaTime);
 
             _entitiesLifeContext?.Update(Time.deltaTime);
+
+            _gameplayStatesContext?.Update(Time.deltaTime);
 
             if (Input.GetKeyDown(KeyCode.F))
             {
