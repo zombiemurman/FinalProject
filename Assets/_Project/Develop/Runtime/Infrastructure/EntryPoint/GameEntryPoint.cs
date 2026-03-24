@@ -65,7 +65,7 @@ namespace Assets._Project.Develop.Runtime.Infrastructure.EntryPoint
 
             SceneSwitcherService sceneSwitcherService = container.Resolve<SceneSwitcherService>();
 
-            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu);
+            yield return sceneSwitcherService.ProcessSwitchTo(Scenes.Gameplay, new GameplayInputArgs(1));
         }
     }
 }
