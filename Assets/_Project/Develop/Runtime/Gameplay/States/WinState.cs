@@ -1,9 +1,9 @@
 ﻿using Assets._Project.Develop.Runtime.Gameplay.Features.InputFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
 using Assets._Project.Develop.Runtime.Meta.Features.LevelsProgression;
+using Assets._Project.Develop.Runtime.UI.Gameplay;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.DataManagment.DataProviders;
-using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
 using Assets._Project.Develop.Runtime.Utilities.StateMachineCore;
 using UnityEngine;
 
@@ -18,23 +18,23 @@ namespace Assets._Project.Develop.Runtime.Gameplay.States
 
         private readonly PlayerDataProvider _playerDataProvider;
 
-        private readonly SceneSwitcherService _sceneSwitcherService;
-
         private readonly ICoroutinesPerformer _coroutinesPerformer;
+
+        private readonly GameplayPopupService _gameplayPopupService;
 
         public WinState(
             IInputService inputService,
-            LevelsProgressionService levelsProgressionService, 
-            GameplayInputArgs gameplayInputArgs, 
-            PlayerDataProvider playerDataProvider, 
-            SceneSwitcherService sceneSwitcherService, 
-            ICoroutinesPerformer coroutinesPerformer) : base(inputService) 
+            LevelsProgressionService levelsProgressionService,
+            GameplayInputArgs gameplayInputArgs,
+            PlayerDataProvider playerDataProvider,
+            ICoroutinesPerformer coroutinesPerformer,
+            GameplayPopupService gameplayPopupService) : base(inputService)
         {
             _levelsProgressionService = levelsProgressionService;
             _gameplayInputArgs = gameplayInputArgs;
             _playerDataProvider = playerDataProvider;
-            _sceneSwitcherService = sceneSwitcherService;
             _coroutinesPerformer = coroutinesPerformer;
+            _gameplayPopupService = gameplayPopupService;
         }
 
         public override void Enter()
@@ -46,14 +46,13 @@ namespace Assets._Project.Develop.Runtime.Gameplay.States
             _levelsProgressionService.AddLevelToCompleted(_gameplayInputArgs.LevelNumber);
 
             _coroutinesPerformer.StartPerform(_playerDataProvider.SaveAsync());
+
+            _gameplayPopupService.OpenWinPopup();
         }
 
         public void Update(float deltaTime)
         {
-            if(Input.GetKeyDown(KeyCode.Q))
-            {
-                _coroutinesPerformer.StartPerform(_sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu));
-            }
+
         }
     }
 }

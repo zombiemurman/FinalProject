@@ -9,6 +9,9 @@ using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
 using Assets._Project.Develop.Runtime.Gameplay.Features.StageFeatures;
 using Assets._Project.Develop.Runtime.Gameplay.States;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
+using Assets._Project.Develop.Runtime.UI;
+using Assets._Project.Develop.Runtime.UI.Core;
+using Assets._Project.Develop.Runtime.UI.Gameplay;
 using Assets._Project.Develop.Runtime.Utilities.AssetsManagment;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using UnityEngine;
@@ -35,11 +38,54 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             container.RegisterAsSingle(CreatePreperationTriggerService);
             container.RegisterAsSingle(CreateGameplayStatesFactory);
             container.RegisterAsSingle(CreateGameplayStatesContext);
+            container.RegisterAsSingle(CreateGameplayPresentersFactory);
+            container.RegisterAsSingle(CreateGameplayPopupService);
             
             container.RegisterAsSingle<IInputService>(CreateDesktopInput);
             
             container.RegisterAsSingle(CreateMomoEntitiesFactory).NonLazy();
             container.RegisterAsSingle(CreateMainHeroHolderService).NonLazy();
+            container.RegisterAsSingle(CreateGameplayUIRoot).NonLazy();
+            container.RegisterAsSingle(CreateGameplayScreenPresenter).NonLazy();
+        }
+
+        private static GameplayPopupService CreateGameplayPopupService(DIContainer container)
+        {
+            return new GameplayPopupService(
+                container.Resolve<ViewsFactory>(),
+                container.Resolve<ProjectPresentersFactory>(),
+                container.Resolve<GameplayUIRoot>(),
+                container.Resolve<GameplayPresentersFactory>());
+        }
+
+        private static GameplayUIRoot CreateGameplayUIRoot(DIContainer container)
+        {
+            ResourcesAssetsLoader resourcesAssetsLoader = container.Resolve<ResourcesAssetsLoader>();
+
+            GameplayUIRoot gameplayUIRootPrefab = resourcesAssetsLoader
+                .Load<GameplayUIRoot>("UI/Gameplay/GameplayUIRoot");
+
+            return Object.Instantiate(gameplayUIRootPrefab);
+        }
+
+        private static GameplayScreenPresenter CreateGameplayScreenPresenter(DIContainer container)
+        {
+            GameplayUIRoot uiRoot = container.Resolve<GameplayUIRoot>();
+
+            GameplayScreenView view = container
+                .Resolve<ViewsFactory>()
+                .Create<GameplayScreenView>(ViewIDs.GameplayScreen, uiRoot.HUDLayer);
+
+            GameplayScreenPresenter presenter = container
+                .Resolve<GameplayPresentersFactory>()
+                .CreateGameplayScreenPresenter(view);
+
+            return presenter;
+        }
+
+        private static GameplayPresentersFactory CreateGameplayPresentersFactory(DIContainer container)
+        {
+            return new GameplayPresentersFactory(container, _inputArgs);
         }
 
         private static GameplayStatesContext CreateGameplayStatesContext(DIContainer container)

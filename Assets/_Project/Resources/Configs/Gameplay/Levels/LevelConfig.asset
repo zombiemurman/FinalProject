@@ -13,6 +13,4 @@ MonoBehaviour:
   m_Name: LevelConfig
   m_EditorClassIdentifier: 
   _stageConfigs:
-  - {fileID: 11400000, guid: b8e0a1677e1702a47a7bcd4f743e40da, type: 2}
-  - {fileID: 11400000, guid: b8e0a1677e1702a47a7bcd4f743e40da, type: 2}
-  - {fileID: 11400000, guid: b8e0a1677e1702a47a7bcd4f743e40da, type: 2}
+  - {fileID: 11400000, guid: c2b97bf7e5436a3418ce7b82110b62c8, type: 2}

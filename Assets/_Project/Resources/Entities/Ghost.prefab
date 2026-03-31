@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &448709073202270699
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1293714051632424988}
+  m_Layer: 6
+  m_Name: HealthBarPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1293714051632424988
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 448709073202270699}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.504, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1163180270273188581}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6190634839122993089
 GameObject:
   m_ObjectHideFlags: 0
@@ -97,6 +128,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4135251429940987659, guid: abada3dc2d44fbc409984b12c4b629a3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1293714051632424988}
     - targetCorrespondingSourceObject: {fileID: 4305980784797601655, guid: abada3dc2d44fbc409984b12c4b629a3,
         type: 3}
       insertIndex: -1
@@ -126,7 +161,17 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -3629997495877483332}
+    - targetCorrespondingSourceObject: {fileID: 2278976177566935095, guid: abada3dc2d44fbc409984b12c4b629a3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9115893050422916505}
   m_SourcePrefab: {fileID: 100100000, guid: abada3dc2d44fbc409984b12c4b629a3, type: 3}
+--- !u!4 &1163180270273188581 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4135251429940987659, guid: abada3dc2d44fbc409984b12c4b629a3,
+    type: 3}
+  m_PrefabInstance: {fileID: 2974397820807632366}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1334971745277024921 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4305980784797601655, guid: abada3dc2d44fbc409984b12c4b629a3,
@@ -228,6 +273,19 @@ CapsuleCollider:
   m_Height: 2.5296004
   m_Direction: 1
   m_Center: {x: 0, y: 1.2648002, z: 0}
+--- !u!114 &9115893050422916505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3956310899917798873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55d4a7e5f53f89c40bb9edbd6209d8e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _point: {fileID: 1293714051632424988}
 --- !u!1001 &6422684964356390067
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -317,6 +375,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 766284609087674895}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ef5210dc7c68592419f623e891afb881,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 628534488975490224}
   m_SourcePrefab: {fileID: 100100000, guid: ef5210dc7c68592419f623e891afb881, type: 3}
 --- !u!95 &597677322861330722 stripped
 Animator:
@@ -371,6 +433,20 @@ MonoBehaviour:
   _applyDamageEffectPrefab: {fileID: 19862656, guid: bfbeddd8307f4e441aa8ae4537bf45ad,
     type: 3}
   _effectSpawnPoint: {fileID: 4318009655335129587}
+--- !u!114 &628534488975490224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6188117565780869602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ece56e4cfcc72994a991fd8603477131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 597677322861330722}
+  _spawnEffectPrefab: {fileID: 19884194, guid: 8f3db2ef4b3fd674eafb97a117b99408, type: 3}
 --- !u!4 &6821630238754675544 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ef5210dc7c68592419f623e891afb881,
