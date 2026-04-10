@@ -24,6 +24,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
 
         private GameplayScreenPresenter _gameplayScreenPresenter;
 
+        private MainHeroHolderService _heroHolderService;
+
         public override void ProcessRegistrations(DIContainer container, IInputSceneArgs sceneArgs = null)
         {
             _container = container;
@@ -52,6 +54,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
 
             _gameplayScreenPresenter = _container.Resolve<GameplayScreenPresenter>();
 
+            _heroHolderService = _container.Resolve<MainHeroHolderService>();
+
             yield break;
         }
 
@@ -76,6 +80,11 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
                 ICoroutinesPerformer coroutinesPerformer = _container.Resolve<ICoroutinesPerformer>();
 
                 coroutinesPerformer.StartPerform(sceneSwitcherService.ProcessSwitchTo(Scenes.MainMenu));
+            }
+
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                _heroHolderService.MainHero.Experience.Value += 1000;
             }
         }
 

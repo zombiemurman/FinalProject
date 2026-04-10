@@ -15,6 +15,8 @@ using Assets._Project.Develop.Runtime.Gameplay.Features.Attack.Shoot;
 using Assets._Project.Develop.Runtime.Configs.Gameplay.Entities;
 using Assets._Project.Develop.Runtime.Gameplay.Features.TeamsFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.SpawnFeatures;
+using System.Collections.Generic;
+using Assets._Project.Develop.Runtime.Gameplay.Features.StatsFeature;
 
 namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
 {
@@ -113,14 +115,26 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
 
             _monoEntitiesFactory.Create(entity, position, heroConfig.PrefabPath);
 
+            Dictionary<StatTypes, float> baseStats = new()
+            {
+                {StatTypes.MoveSpeed, heroConfig.MoveSpeed },
+                {StatTypes.MaxHealth, heroConfig.MaxHealth },
+                {StatTypes.Damage, heroConfig.InstantAttackDamage },
+            };
+
+            Dictionary<StatTypes, float> modifiedStats = new(baseStats);
+
             entity
+                .AddStatsEffects()
+                .AddBaseStats(baseStats)
+                .AddModifiedStats(modifiedStats)
                 .AddMoveDirection()
-                .AddMoveSpeed(new ReactiveVariable<float>(heroConfig.MoveSpeed))
+                .AddMoveSpeed(new ReactiveVariable<float>(baseStats[StatTypes.MoveSpeed]))
                 .AddIsMoving()
                 .AddRotationDirection()
                 .AddRotationSpeed(new ReactiveVariable<float>(heroConfig.RotationSpeed))
-                .AddMaxHealth(new ReactiveVariable<float>(heroConfig.MaxHealth))
-                .AddCurrentHealth(new ReactiveVariable<float>(heroConfig.MaxHealth))
+                .AddMaxHealth(new ReactiveVariable<float>(baseStats[StatTypes.MaxHealth]))
+                .AddCurrentHealth(new ReactiveVariable<float>(baseStats[StatTypes.MaxHealth]))
                 .AddIsDead()
                 .AddInDeathProcess()
                 .AddDeathProcesInitialTime(new ReactiveVariable<float>(heroConfig.DeathProcessTime))
@@ -135,7 +149,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
                 .AddEndAttackEvent()
                 .AddAttackDelayTime(new ReactiveVariable<float>(heroConfig.AttackDelayTime))
                 .AddAttackDelayEndEvent()
-                .AddInstantAttackDamage(new ReactiveVariable<float>(heroConfig.InstantAttackDamage))
+                .AddInstantAttackDamage(new ReactiveVariable<float>(baseStats[StatTypes.Damage]))
                 .AddAttackCancelEvent()
                 .AddAttackCooldownInitialTime(new ReactiveVariable<float>(heroConfig.AttackCooldown))
                 .AddAttackCooldownCurentTime()
@@ -177,6 +191,10 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
                 .AddMustCancelAttack(mustCancelAttack);
 
             entity
+                .AddSystem(new StateEffectApplierSystem())
+                .AddSystem(new MoveSpeedStatSynchronizerSystem())
+                .AddSystem(new DamageStatSynchronizerSystem())
+                .AddSystem(new MaxHealthStatSynchronizerSystem())
                 .AddSystem(new RigidbodyMovementSystem())
                 .AddSystem(new RigidbodyRotationSystem())
                 .AddSystem(new AttackCancelSystem())

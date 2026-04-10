@@ -1,15 +1,23 @@
-﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore;
+﻿using Assets._Project.Develop.Runtime.Configs.Gameplay;
+using Assets._Project.Develop.Runtime.Configs.Gameplay.Abilities;
+using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Systems;
+using Assets._Project.Develop.Runtime.Gameplay.Features.AbilitiesDropingFeatures;
+using Assets._Project.Develop.Runtime.Gameplay.Features.AbilitiesFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
 using Assets._Project.Develop.Runtime.Gameplay.Features.StageFeatures;
 using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
 using Assets._Project.Develop.Runtime.UI.CommonViews;
 using Assets._Project.Develop.Runtime.UI.Core;
+using Assets._Project.Develop.Runtime.UI.Gameplay.Experience;
 using Assets._Project.Develop.Runtime.UI.Gameplay.HealthDisplay;
 using Assets._Project.Develop.Runtime.UI.Gameplay.ResultsPopups;
 using Assets._Project.Develop.Runtime.UI.Gameplay.Stages;
+using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.SceneManagment;
+using Assets.CourseGame.Develop.Gameplay.Features.AbilitiesFeature.View;
 
 namespace Assets._Project.Develop.Runtime.UI.Gameplay
 {
@@ -22,6 +30,29 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
         {
             _container = container;
             _gameplayInputArgs = gameplayInputArgs;
+        }
+
+        public SelectableAbilityPresenter CreateSelectableAbilityPresenter(
+            AbilityConfig abilityConfig,
+            SelectableAbilityView view,
+            Entity entity)
+        {
+            return new SelectableAbilityPresenter(abilityConfig, view, _container.Resolve<AbilityFactory>(), entity);
+        }
+
+        public AbilitySelectPopupPresenter CreateAbilitySelectPopupPresenter(
+           AbilitySelectPopupView view,
+           Entity entity,
+           int level)
+        {
+            return new AbilitySelectPopupPresenter(
+                _container.Resolve<ICoroutinesPerformer>(),
+                view,
+                entity,
+                this,
+                _container.Resolve<AbilityDropService>(),
+                _container.Resolve<ViewsFactory>(),
+                level);
         }
 
         public GameplayScreenPresenter CreateGameplayScreenPresenter(GameplayScreenView view)
@@ -67,6 +98,14 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
                 view,
                 _container.Resolve<ViewsFactory>(),
                 this);
+        }
+
+        public MainHeroExperiencePresenter CreateMainHeroExperiencePresenter(BarWithText view)
+        {
+            return new MainHeroExperiencePresenter(
+                _container.Resolve<MainHeroHolderService>(),
+                view,
+                _container.Resolve<ConfigsProviderService>().GetConfig<ExperienceForUpgradeLevelConfig>());
         }
     }
 }
