@@ -35,9 +35,10 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
         public SelectableAbilityPresenter CreateSelectableAbilityPresenter(
             AbilityConfig abilityConfig,
             SelectableAbilityView view,
-            Entity entity)
+            Entity entity,
+            int level)
         {
-            return new SelectableAbilityPresenter(abilityConfig, view, _container.Resolve<AbilityFactory>(), entity);
+            return new SelectableAbilityPresenter(abilityConfig, view, _container.Resolve<AbilityFactory>(), entity, level);
         }
 
         public AbilitySelectPopupPresenter CreateAbilitySelectPopupPresenter(
@@ -59,7 +60,9 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
         {
             return new GameplayScreenPresenter(
                 view,
-                _container.Resolve<GameplayPresentersFactory>());
+                _container.Resolve<GameplayPresentersFactory>(),
+                _container.Resolve<MainHeroHolderService>(),
+                _container.Resolve<ProjectPresentersFactory>());
         }
 
         public WinPopupPresenter CreateWinPopupPresenter(WinPopupView view)

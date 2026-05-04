@@ -1,7 +1,10 @@
-﻿using Assets._Project.Develop.Runtime.UI.Core;
+﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore;
+using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
+using Assets._Project.Develop.Runtime.UI.Core;
 using Assets._Project.Develop.Runtime.UI.Gameplay.Experience;
 using Assets._Project.Develop.Runtime.UI.Gameplay.HealthDisplay;
 using Assets._Project.Develop.Runtime.UI.Gameplay.Stages;
+using Assets._Project.Develop.Runtime.UI.Wallet;
 using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -14,14 +17,26 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
 
         private readonly GameplayPresentersFactory _gameplayPresentersFactory;
 
+        private readonly ProjectPresentersFactory _projectPresentersFactory;
+
         private readonly List<IPresenter> _childPresenters = new();
+
+        private readonly MainHeroHolderService _mainHeroHolderService;
+        private IDisposable _mainHeroHolderServiceDisposable;
+        private CurrencyPresenter _mainHeroCoinsPresenter;
 
         private EntitiesHealthDisplayPresenter _entitiesHealthDisplayPresenter;
 
-        public GameplayScreenPresenter(GameplayScreenView screen, GameplayPresentersFactory gameplayPresentersFactory)
+        public GameplayScreenPresenter(
+            GameplayScreenView screen,
+            GameplayPresentersFactory gameplayPresentersFactory,
+            MainHeroHolderService mainHeroHolderService,
+            ProjectPresentersFactory projectPresentersFactory)
         {
             _screen = screen;
             _gameplayPresentersFactory = gameplayPresentersFactory;
+            _mainHeroHolderService = mainHeroHolderService;
+            _projectPresentersFactory = projectPresentersFactory;
         }
 
         public void Initialize()
@@ -33,12 +48,17 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
 
             CreateMainHeroExperienceView();
 
+            _mainHeroHolderServiceDisposable = _mainHeroHolderService.HeroRegistred.Subscribe(OnHeroRegistered);
+
             foreach (IPresenter presenter in _childPresenters)
                 presenter.Initialize();
         }
 
         public void Dispose()
         {
+            _mainHeroHolderServiceDisposable.Dispose();
+            _mainHeroCoinsPresenter?.Dispose();
+
             foreach (IPresenter presenter in _childPresenters)
                 presenter.Dispose();
 
@@ -69,6 +89,13 @@ namespace Assets._Project.Develop.Runtime.UI.Gameplay
             MainHeroExperiencePresenter experiencePresenter = _gameplayPresentersFactory.CreateMainHeroExperiencePresenter(_screen.ExperienceBarView);
 
             _childPresenters.Add(experiencePresenter);
+        }
+
+        private void OnHeroRegistered(Entity entity)
+        {
+            _mainHeroCoinsPresenter = _projectPresentersFactory.CreateCurrencyPresenter(_screen.CoinsView, entity.Coins, Meta.Features.Wallet.CurrencyTypes.Gold);
+
+            _mainHeroCoinsPresenter.Initialize();
         }
 
     }

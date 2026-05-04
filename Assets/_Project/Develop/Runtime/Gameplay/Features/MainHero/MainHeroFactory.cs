@@ -7,10 +7,14 @@ using Assets._Project.Develop.Runtime.Gameplay.Features.AbilitiesFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.AI;
 using Assets._Project.Develop.Runtime.Gameplay.Features.AI.States;
 using Assets._Project.Develop.Runtime.Gameplay.Features.LevelUPFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.StatsFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.TeamsFeature;
 using Assets._Project.Develop.Runtime.Infrastructure.DI;
+using Assets._Project.Develop.Runtime.Meta.Features.StatsUpgrade;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using Assets._Project.Develop.Runtime.Utilities.Reactive;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets._Project.Develop.Runtime.Gameplay.Features.MainHero
@@ -27,6 +31,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.MainHero
 
         private readonly EntitiesLifeContext _entitiesLifeContext;
 
+        private readonly StatsUpgradeService _statsUpgradeService;
+
         public MainHeroFactory(DIContainer container)
         {
             _container = container;
@@ -35,13 +41,14 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.MainHero
             _brainsFacttory = _container.Resolve<BrainsFacttory>();
             _configsProviderService = _container.Resolve<ConfigsProviderService>();
             _entitiesLifeContext = _container.Resolve<EntitiesLifeContext>();
+            _statsUpgradeService = _container.Resolve<StatsUpgradeService>();
         }
 
         public Entity Create(Vector3 position)
         {
             HeroConfig config = _configsProviderService.GetConfig<HeroConfig>();
 
-            Entity entity = _entitiesFactory.CreateHeroEntity(position, config);
+            Entity entity = _entitiesFactory.CreateHeroEntity(position, config, GetStats());
 
             entity
                 .AddAbilities()
@@ -57,11 +64,24 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.MainHero
                 .AddExperience()
                 .AddSystem(new LevelUpSystem(_configsProviderService.GetConfig<ExperienceForUpgradeLevelConfig>()));
 
+            entity
+                .AddCoins();
+
             _brainsFacttory.CreateMainHeroBrain(entity, new NearestDamageableTargetSelector(entity));
 
             _entitiesLifeContext.Add(entity);
 
             return entity;
+        }
+
+        private Dictionary<StatTypes, float> GetStats()
+        {
+            Dictionary<StatTypes, float> stats = new();
+
+            foreach (StatTypes statType in Enum.GetValues(typeof(StatTypes)))
+                stats.Add(statType, _statsUpgradeService.GetCurrentStatValueFor(statType));
+            
+            return stats;
         }
     }
 }

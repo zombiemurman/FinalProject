@@ -1,4 +1,5 @@
-﻿using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
+﻿using Assets._Project.Develop.Runtime.Gameplay.Features.StatsFeature;
+using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
 using System.Collections.Generic;
 
 namespace Assets._Project.Develop.Runtime.Utilities.DataManagment
@@ -8,5 +9,7 @@ namespace Assets._Project.Develop.Runtime.Utilities.DataManagment
         public Dictionary<CurrencyTypes, int> WalletData;
 
         public List<int> CompletedLevels;
+
+        public Dictionary<StatTypes, int> StatsUpgradeLevel;
     }
 }

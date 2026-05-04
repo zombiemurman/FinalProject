@@ -1,6 +1,7 @@
 ﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Mono;
 using Assets._Project.Develop.Runtime.Utilities.Reactive;
+using System;
 using UnityEngine;
 
 namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack
@@ -13,7 +14,10 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack
         [SerializeField] private AnimationClip _animationClip;
         [SerializeField] private Animator _animator;
 
-        private ReactiveVariable<float> _attackProcessTime;
+        private ReactiveVariable<float> _attackProcessInitialTime;
+        private ReactiveVariable<float> _attackProcessModofoedTime;
+
+        private IDisposable _attackProcessTimeChangedDisposable;
 
         private void OnValidate()
         {
@@ -22,9 +26,17 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Features.Attack
 
         protected override void OnEntityStartedWork(Entity entity)
         {
-            _attackProcessTime = entity.AttackProcessInitialTime;
+            _attackProcessInitialTime = entity.AttackProcessInitialTime;
+            _attackProcessModofoedTime = entity.AttackProcessModifiedTime;
 
-            _animator.SetFloat(_attackAnimationSpeedMultiplierKey, _animationClip.length / _attackProcessTime.Value);
+            _attackProcessTimeChangedDisposable = _attackProcessModofoedTime.Subscribe(OnAttackProcessTimeChanged);
+
+            OnAttackProcessTimeChanged(0, _attackProcessModofoedTime.Value);
+        }
+
+        private void OnAttackProcessTimeChanged(float arg1, float currenAttackProcessTime)
+        {
+            _animator.SetFloat(_attackAnimationSpeedMultiplierKey, _attackProcessInitialTime.Value / currenAttackProcessTime);
         }
     }
 }

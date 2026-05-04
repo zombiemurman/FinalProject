@@ -1,5 +1,6 @@
 ﻿using Assets._Project.Develop.Runtime.Configs.Gameplay.Abilities;
 using Assets._Project.Develop.Runtime.Configs.Gameplay.Levels;
+using Assets._Project.Develop.Runtime.Configs.Gameplay.Loot;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Mono;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Systems;
@@ -9,6 +10,7 @@ using Assets._Project.Develop.Runtime.Gameplay.Features.AI;
 using Assets._Project.Develop.Runtime.Gameplay.Features.Enemies;
 using Assets._Project.Develop.Runtime.Gameplay.Features.InputFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.LevelUPFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.LootFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
 using Assets._Project.Develop.Runtime.Gameplay.Features.PauseFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Features.StageFeatures;
@@ -49,6 +51,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             container.RegisterAsSingle(CreateAbilityFactory);
             container.RegisterAsSingle(CreateAbilityDropingRulesService);
             container.RegisterAsSingle(CreateAbilityDropService);
+            container.RegisterAsSingle(CreateLootFactory);
+            container.RegisterAsSingle(CreateDropLootService);
             
             container.RegisterAsSingle<IPauseService>(CreateTimeScalePauseService);
             container.RegisterAsSingle<IInputService>(CreateDesktopInput);
@@ -58,6 +62,24 @@ namespace Assets._Project.Develop.Runtime.Gameplay.Infrastructure
             container.RegisterAsSingle(CreateGameplayUIRoot).NonLazy();
             container.RegisterAsSingle(CreateGameplayScreenPresenter).NonLazy();
             container.RegisterAsSingle(CreateDropAbilityOnMainHeroLevelUpService).NonLazy();
+            container.RegisterAsSingle(CreateLootPullingService).NonLazy();
+        }
+
+        private static LootPullingService CreateLootPullingService(DIContainer container)
+        {
+            return new LootPullingService(container.Resolve<EntitiesLifeContext>());
+        }
+
+        private static DropLootService CreateDropLootService(DIContainer container)
+        {
+            return new DropLootService(
+                container.Resolve<ConfigsProviderService>().GetConfig<LootListConfig>(),
+                container.Resolve<LootFactory>());
+        }
+
+        private static LootFactory CreateLootFactory(DIContainer container)
+        {
+            return new LootFactory(container);
         }
 
         private static TimeScalePauseService CreateTimeScalePauseService(DIContainer container)

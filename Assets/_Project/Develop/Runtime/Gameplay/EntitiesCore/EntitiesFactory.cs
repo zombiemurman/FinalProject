@@ -1,22 +1,24 @@
-﻿using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Mono;
+﻿using Assets._Project.Develop.Runtime.Configs.Gameplay.Entities;
+using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Mono;
 using Assets._Project.Develop.Runtime.Gameplay.EntitiesCore.Systems;
 using Assets._Project.Develop.Runtime.Gameplay.Features.ApplyDamage;
-using Assets._Project.Develop.Runtime.Gameplay.Features.LifeCycle;
-using Assets._Project.Develop.Runtime.Gameplay.Features.MovementFeatures;
-using Assets._Project.Develop.Runtime.Infrastructure.DI;
-using Assets._Project.Develop.Runtime.Utilities.Conditions;
-using Assets._Project.Develop.Runtime.Utilities.Reactive;
-using Assets._Project.Develop.Runtime.Utilities;
-using UnityEngine;
-using Assets._Project.Develop.Runtime.Gameplay.Features.Sensors;
-using Assets._Project.Develop.Runtime.Gameplay.Features.ContactTakeDamage;
 using Assets._Project.Develop.Runtime.Gameplay.Features.Attack;
 using Assets._Project.Develop.Runtime.Gameplay.Features.Attack.Shoot;
-using Assets._Project.Develop.Runtime.Configs.Gameplay.Entities;
-using Assets._Project.Develop.Runtime.Gameplay.Features.TeamsFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.BounceFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.ContactTakeDamage;
+using Assets._Project.Develop.Runtime.Gameplay.Features.LifeCycle;
+using Assets._Project.Develop.Runtime.Gameplay.Features.LootFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.MovementFeatures;
+using Assets._Project.Develop.Runtime.Gameplay.Features.Sensors;
 using Assets._Project.Develop.Runtime.Gameplay.Features.SpawnFeatures;
-using System.Collections.Generic;
 using Assets._Project.Develop.Runtime.Gameplay.Features.StatsFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.TeamsFeature;
+using Assets._Project.Develop.Runtime.Infrastructure.DI;
+using Assets._Project.Develop.Runtime.Utilities;
+using Assets._Project.Develop.Runtime.Utilities.Conditions;
+using Assets._Project.Develop.Runtime.Utilities.Reactive;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
 {
@@ -109,18 +111,11 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
             return entity;
         }
 
-        public Entity CreateHeroEntity(Vector3 position, HeroConfig heroConfig)
+        public Entity CreateHeroEntity(Vector3 position, HeroConfig heroConfig, Dictionary<StatTypes, float> baseStats)
         {
             Entity entity = CreateEmpty();
 
             _monoEntitiesFactory.Create(entity, position, heroConfig.PrefabPath);
-
-            Dictionary<StatTypes, float> baseStats = new()
-            {
-                {StatTypes.MoveSpeed, heroConfig.MoveSpeed },
-                {StatTypes.MaxHealth, heroConfig.MaxHealth },
-                {StatTypes.Damage, heroConfig.InstantAttackDamage },
-            };
 
             Dictionary<StatTypes, float> modifiedStats = new(baseStats);
 
@@ -142,18 +137,24 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
                 .AddTakeDamageRequest()
                 .AddTakeDamageEvent()
                 .AddAttackProcessInitialTime(new ReactiveVariable<float>(heroConfig.AttackProcessTime))
+                .AddAttackProcessModifiedTime(new ReactiveVariable<float>(heroConfig.AttackProcessTime))
                 .AddAttackProcessCurrentTime()
                 .AddInAttackProcess()
+                .AddInstanShootingDirection(new InstantShootingDirectionArgs(
+                    new InstantShotDirectionArgs(0, 3)))
                 .AddStartAttackRequest()
                 .AddStartAttackEvent()
                 .AddEndAttackEvent()
                 .AddAttackDelayTime(new ReactiveVariable<float>(heroConfig.AttackDelayTime))
+                .AddAttackDelayModifiedTime(new ReactiveVariable<float>(heroConfig.AttackDelayTime))
                 .AddAttackDelayEndEvent()
                 .AddInstantAttackDamage(new ReactiveVariable<float>(baseStats[StatTypes.Damage]))
                 .AddAttackCancelEvent()
                 .AddAttackCooldownInitialTime(new ReactiveVariable<float>(heroConfig.AttackCooldown))
+                .AddAttackCooldownModifiedTime(new ReactiveVariable<float>(heroConfig.AttackCooldown))
                 .AddAttackCooldownCurentTime()
-                .AddInAttackCooldown();
+                .AddInAttackCooldown()
+                .AddAttackPerSecond(new ReactiveVariable<float>(baseStats[StatTypes.AttackPerSecond]));
 
             ICompositCondition canMove = new CompositeCondition()
                 .Add(new FuncCondition(() => entity.IsDead.Value == false));
@@ -192,6 +193,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
 
             entity
                 .AddSystem(new StateEffectApplierSystem())
+                .AddSystem(new AttackPerSecondStatSynchronizerSystem())
+                .AddSystem(new AttackTimeByAttackSpeedStatSyncronizerSystem())
                 .AddSystem(new MoveSpeedStatSynchronizerSystem())
                 .AddSystem(new DamageStatSynchronizerSystem())
                 .AddSystem(new MaxHealthStatSynchronizerSystem())
@@ -201,7 +204,7 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
                 .AddSystem(new StartAttackSystem())
                 .AddSystem(new AttackProcessTimerSystem())
                 .AddSystem(new AttackDelayEndTriggerSystem())
-                .AddSystem(new InstantShootSystem(this))
+                .AddSystem(new DirectionsInstantShootSystem(this))
                 .AddSystem(new EndAttackSystem())
                 .AddSystem(new AttackCooldownTimerSystem())
                 .AddSystem(new ApplyDamageSystem())
@@ -220,6 +223,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
             _monoEntitiesFactory.Create(entity, position, "Entities/Projectile");
 
             entity
+                .AddIsProjectile()
+                .AddOwner(new ReactiveVariable<Entity>(owner))
                 .AddMoveDirection(new ReactiveVariable<Vector3>(direction))
                 .AddMoveSpeed(new ReactiveVariable<float>(25))
                 .AddIsMoving()
@@ -241,9 +246,9 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
             ICompositCondition canRotate = new CompositeCondition()
                             .Add(new FuncCondition(() => entity.IsDead.Value == false));
 
-            ICompositCondition mustDie = new CompositeCondition(LogicOperations.Or)
-                            .Add(new FuncCondition(() => entity.IsTouchDeatMask.Value))
-                            .Add(new FuncCondition(() => entity.IsTouchAnotherTeam.Value));
+            ICompositCondition mustDie = new CompositeCondition()
+                            .Add(new FuncCondition(() => entity.IsTouchDeatMask.Value), 0)
+                            .Add(new FuncCondition(() => entity.IsTouchAnotherTeam.Value), 10, LogicOperations.Or);
 
             ICompositCondition mustSelfReleased = new CompositeCondition()
                             .Add(new FuncCondition(() => entity.IsDead.Value));
@@ -287,6 +292,42 @@ namespace Assets._Project.Develop.Runtime.Gameplay.EntitiesCore
                 .AddSystem(new BodyContactsEntitiesFilterSystem(_collidersRegistryService));
 
             _entitiesLifeContext.Add(entity);
+
+            return entity;
+        }
+
+        public Entity CreatePullable(string prefabPath, Vector3 position)
+        {
+            Entity entity = CreateEmpty();
+
+            _monoEntitiesFactory.Create(entity, position, prefabPath);
+
+            entity
+                .AddIsPullable()
+                .AddIsPullingProcess()
+                .AddInSpawnProcess(new ReactiveVariable<bool>(true))
+                .AddCurrentTarget(new ReactiveVariable<Entity>(null))
+                .AddMoveDirection()
+                .AddMoveSpeed(new ReactiveVariable<float>(12))
+                .AddIsMoving()
+                .AddIsCollected();
+
+            ICompositCondition moveCondition = new CompositeCondition()
+                .Add(new FuncCondition(() => entity.IsPullingProcess.Value))
+                .Add(new FuncCondition(() => entity.InSpawnProcess.Value == false));
+
+            ICompositCondition mustSelfRelease = new CompositeCondition()
+                .Add(new FuncCondition(() => entity.IsCollected.Value));
+
+            entity
+                .AddCanMove(moveCondition)
+                .AddMustSelfReleased(mustSelfRelease);
+
+            entity
+                .AddSystem(new GenerateMoveDirectionToTargetSystem())
+                .AddSystem(new RigidbodyMovementSystem())
+                .AddSystem(new CollectedOnNearToTargetSystem())
+                .AddSystem(new SelfRealeseSystem(_entitiesLifeContext));
 
             return entity;
         }

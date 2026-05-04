@@ -1,5 +1,7 @@
 ﻿using Assets._Project.Develop.Runtime.UI.Core.TestPopup;
 using Assets._Project.Develop.Runtime.UI.LevelsMenuPopup;
+using Assets._Project.Develop.Runtime.UI.StatsUpgradePopup;
+using Assets.CourseGame.Develop.MainMenu.StatsUpgradeFeature;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -40,6 +42,17 @@ namespace Assets._Project.Develop.Runtime.UI.Core
             LevelsMenuPopupView view = ViewsFactory.Create<LevelsMenuPopupView>(ViewIDs.LevelsMenuPopup, PopupLayer);
 
             LevelsMenuPopupPresenter popup = _presentersFactory.CreateLevelsMenuPopupPresenter(view);
+
+            OnPopupCreated(popup, view);
+
+            return popup;
+        }
+
+        public StatsUpgradePopupPresenter OpenStatsUpgradePopup()
+        {
+            StatsUpgradePopupView view = ViewsFactory.Create<StatsUpgradePopupView>(ViewIDs.StatsUpgradePopupView, PopupLayer);
+
+            StatsUpgradePopupPresenter popup = _presentersFactory.CreateStatsUpgradePopupPresenter(view);
 
             OnPopupCreated(popup, view);
 

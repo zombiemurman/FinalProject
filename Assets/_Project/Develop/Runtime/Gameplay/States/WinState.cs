@@ -1,7 +1,9 @@
 ﻿using Assets._Project.Develop.Runtime.Gameplay.Features.InputFeature;
+using Assets._Project.Develop.Runtime.Gameplay.Features.MainHero;
 using Assets._Project.Develop.Runtime.Gameplay.Features.PauseFeature;
 using Assets._Project.Develop.Runtime.Gameplay.Infrastructure;
 using Assets._Project.Develop.Runtime.Meta.Features.LevelsProgression;
+using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
 using Assets._Project.Develop.Runtime.UI.Gameplay;
 using Assets._Project.Develop.Runtime.Utilities.CoroutinesManagment;
 using Assets._Project.Develop.Runtime.Utilities.DataManagment.DataProviders;
@@ -23,6 +25,10 @@ namespace Assets._Project.Develop.Runtime.Gameplay.States
 
         private readonly GameplayPopupService _gameplayPopupService;
 
+        private readonly WalletService _walletService;
+
+        private readonly MainHeroHolderService _mainHeroHolderService;
+
         public WinState(
             IInputService inputService,
             LevelsProgressionService levelsProgressionService,
@@ -30,13 +36,17 @@ namespace Assets._Project.Develop.Runtime.Gameplay.States
             PlayerDataProvider playerDataProvider,
             ICoroutinesPerformer coroutinesPerformer,
             GameplayPopupService gameplayPopupService,
-            IPauseService pauseService) : base(inputService, pauseService)
+            IPauseService pauseService,
+            WalletService walletService,
+            MainHeroHolderService mainHeroHolderService) : base(inputService, pauseService)
         {
             _levelsProgressionService = levelsProgressionService;
             _gameplayInputArgs = gameplayInputArgs;
             _playerDataProvider = playerDataProvider;
             _coroutinesPerformer = coroutinesPerformer;
             _gameplayPopupService = gameplayPopupService;
+            _walletService = walletService;
+            _mainHeroHolderService = mainHeroHolderService;
         }
 
         public override void Enter()
@@ -44,6 +54,8 @@ namespace Assets._Project.Develop.Runtime.Gameplay.States
             base.Enter();
 
             Debug.Log("WIN WIN WIN");
+
+            _walletService.Add(CurrencyTypes.Gold, _mainHeroHolderService.MainHero.Coins.Value);
 
             _levelsProgressionService.AddLevelToCompleted(_gameplayInputArgs.LevelNumber);
 

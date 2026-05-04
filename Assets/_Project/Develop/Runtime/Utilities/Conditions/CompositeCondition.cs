@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets._Project.Develop.Runtime.Utilities.Conditions
 {
     public class CompositeCondition : ICompositCondition
     {
-        private List<ICondition> _conditions = new();
+        private List<(ICondition, Func<bool, bool, bool>, int)> _conditions = new();
 
         private Func<bool, bool, bool> _standartLogicOperation;
 
@@ -18,9 +19,11 @@ namespace Assets._Project.Develop.Runtime.Utilities.Conditions
         { 
         }
 
-        public ICompositCondition Add(ICondition condition)
+        public ICompositCondition Add(ICondition condition, int order = 0, Func<bool, bool, bool> logicOperation = null)
         {
-            _conditions.Add(condition);
+            _conditions.Add((condition, logicOperation, order));
+
+            _conditions = _conditions.OrderBy(cond => cond.Item3).ToList();
 
             return this;
         }
@@ -30,13 +33,16 @@ namespace Assets._Project.Develop.Runtime.Utilities.Conditions
             if(_conditions.Count == 0)
                 return false;
 
-            bool result = _conditions[0].Evaluate();
+            bool result = _conditions[0].Item1.Evaluate();
 
             for(int i = 1; i < _conditions.Count; i++)
             {
-                ICondition condition = _conditions[i];
+                var currentCondition = _conditions[i];
 
-                result = _standartLogicOperation.Invoke(result, condition.Evaluate());
+                if (currentCondition.Item2 != null)
+                    result = currentCondition.Item2.Invoke(result, currentCondition.Item1.Evaluate());
+                else
+                    result = _standartLogicOperation.Invoke(result, currentCondition.Item1.Evaluate());
             }
 
             return result;
@@ -44,7 +50,9 @@ namespace Assets._Project.Develop.Runtime.Utilities.Conditions
 
         public ICompositCondition Remove(ICondition condition)
         {
-            _conditions.Remove(condition);
+            (ICondition, Func<bool, bool, bool>, int) conditionPair = _conditions.First(condPair => condPair.Item1 == condition);
+
+            _conditions.Remove(conditionPair);
 
             return this;
         }

@@ -1,4 +1,5 @@
 ﻿using Assets._Project.Develop.Runtime.Configs.Meta.Wallet;
+using Assets._Project.Develop.Runtime.Gameplay.Features.StatsFeature;
 using Assets._Project.Develop.Runtime.Meta.Features.Wallet;
 using Assets._Project.Develop.Runtime.Utilities.ConfigsManagmet;
 using Assets._Project.Develop.Runtime.Utilities.Reactive;
@@ -24,8 +25,19 @@ namespace Assets._Project.Develop.Runtime.Utilities.DataManagment.DataProviders
             return new PlayerData()
             {
                 WalletData = InitWalletData(),
-                CompletedLevels = new()
+                CompletedLevels = new(),
+                StatsUpgradeLevel = InintStatsUpgradesLevels()
             };
+        }
+
+        private Dictionary<StatTypes, int> InintStatsUpgradesLevels()
+        {
+            Dictionary<StatTypes, int> statUpgradesLevels = new();
+
+            foreach (StatTypes statTypes in Enum.GetValues(typeof(StatTypes)))
+                statUpgradesLevels.Add(statTypes, 1);
+
+            return statUpgradesLevels;
         }
 
         private Dictionary<CurrencyTypes, int> InitWalletData()
